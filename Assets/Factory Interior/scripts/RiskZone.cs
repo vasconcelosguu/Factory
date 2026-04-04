@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RiskZone : MonoBehaviour
 {
     public string riskName = "Área 1";
     [TextArea] public string description = "Área de risco";
-    public string requiredEPI = "Capacete";
+
+    [Header("EPIs obrigatórios")]
+    public List<string> requiredEPIs = new List<string>();
 
     [Header("Bloqueio")]
     public bool blockEntryWithoutEPI = true;
@@ -46,9 +49,9 @@ public class RiskZone : MonoBehaviour
             return;
         }
 
-        bool hasRequiredEPI = TrainingManager.Instance.HasEPI(requiredEPI);
+        List<string> missingEPIs = GetMissingEPIs();
 
-        if (hasRequiredEPI)
+        if (missingEPIs.Count == 0)
         {
             if (WarningUI.Instance != null)
                 WarningUI.Instance.HideWarning();
@@ -58,16 +61,57 @@ public class RiskZone : MonoBehaviour
 
         if (Time.time >= nextMessageTime)
         {
-            Debug.LogWarning("Sem EPI obrigatório: " + requiredEPI);
+            string missingMessage = FormatEPIList(missingEPIs);
+
+            Debug.LogWarning("Sem EPI obrigatório: " + missingMessage);
 
             if (WarningUI.Instance != null)
-                WarningUI.Instance.ShowWarning("Você não pode entrar sem capacete", 4f);
+                WarningUI.Instance.ShowWarning("Você não pode entrar sem " + missingMessage.ToLower(), 4f);
 
             nextMessageTime = Time.time + messageCooldown;
         }
 
         if (blockEntryWithoutEPI)
             PushPlayerOut(playerTransform);
+    }
+
+    private List<string> GetMissingEPIs()
+    {
+        List<string> missing = new List<string>();
+
+        foreach (string epi in requiredEPIs)
+        {
+            if (!TrainingManager.Instance.HasEPI(epi))
+            {
+                missing.Add(epi);
+            }
+        }
+
+        return missing;
+    }
+
+    private string FormatEPIList(List<string> epis)
+    {
+        if (epis.Count == 0)
+            return "";
+
+        if (epis.Count == 1)
+            return epis[0];
+
+        if (epis.Count == 2)
+            return epis[0] + " e " + epis[1];
+
+        string result = "";
+
+        for (int i = 0; i < epis.Count; i++)
+        {
+            if (i == epis.Count - 1)
+                result += "e " + epis[i];
+            else
+                result += epis[i] + ", ";
+        }
+
+        return result;
     }
 
     private void PushPlayerOut(Transform playerTransform)

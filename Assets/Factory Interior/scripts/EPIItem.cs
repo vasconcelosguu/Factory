@@ -12,6 +12,10 @@ public class EPIItem : MonoBehaviour
         if (playerNearby && Input.GetKeyDown(interactKey))
         {
             TrainingManager.Instance.EquipEPI(epiName);
+
+            if (InteractUI.Instance != null)
+                InteractUI.Instance.Hide();
+
             Debug.Log("Pegou o EPI: " + epiName);
 
             gameObject.SetActive(false);
@@ -23,7 +27,11 @@ public class EPIItem : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerNearby = true;
-            Debug.Log("Pressione E para pegar: " + epiName);
+
+            if (InteractUI.Instance != null)
+            {
+                InteractUI.Instance.Show("Pressione [E] para pegar o " + epiName);
+            }
         }
     }
 
@@ -32,6 +40,9 @@ public class EPIItem : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerNearby = false;
+
+            if (InteractUI.Instance != null)
+                InteractUI.Instance.Hide();
         }
     }
 }
