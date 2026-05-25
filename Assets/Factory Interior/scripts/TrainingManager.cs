@@ -9,13 +9,23 @@ public class TrainingManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void EquipEPI(string epiName)
     {
+        if (string.IsNullOrEmpty(epiName))
+            return;
+
         equippedEPIs.Add(epiName);
-        Debug.Log("Equipado: " + epiName);
+        Debug.Log("EPI equipado: " + epiName);
     }
 
     public bool HasEPI(string epiName)

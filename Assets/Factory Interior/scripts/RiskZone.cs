@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class RiskZone : MonoBehaviour
 {
-    public string riskName = "Área 1";
-    [TextArea] public string description = "Área de risco";
+    public string riskName = "Área de risco";
+    [TextArea] public string description = "Área que exige EPIs.";
 
     [Header("EPIs obrigatórios")]
     public List<string> requiredEPIs = new List<string>();
@@ -12,7 +12,7 @@ public class RiskZone : MonoBehaviour
     [Header("Bloqueio")]
     public bool blockEntryWithoutEPI = true;
     public float pushBackDistance = 1.5f;
-    public float messageCooldown = 1.0f;
+    public float messageCooldown = 1f;
 
     private float nextMessageTime = 0f;
 
@@ -32,22 +32,10 @@ public class RiskZone : MonoBehaviour
         CheckAccess(other.transform);
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player"))
-            return;
-
-        if (WarningUI.Instance != null)
-            WarningUI.Instance.HideWarning();
-    }
-
     private void CheckAccess(Transform playerTransform)
     {
         if (TrainingManager.Instance == null)
-        {
-            Debug.LogWarning("TrainingManager não encontrado.");
             return;
-        }
 
         List<string> missingEPIs = GetMissingEPIs();
 
@@ -61,12 +49,10 @@ public class RiskZone : MonoBehaviour
 
         if (Time.time >= nextMessageTime)
         {
-            string missingMessage = FormatEPIList(missingEPIs);
-
-            Debug.LogWarning("Sem EPI obrigatório: " + missingMessage);
+            string msg = FormatEPIList(missingEPIs);
 
             if (WarningUI.Instance != null)
-                WarningUI.Instance.ShowWarning("Você não pode entrar sem " + missingMessage.ToLower(), 4f);
+                WarningUI.Instance.ShowWarning("Você precisa de " + msg.ToLower(), 4f);
 
             nextMessageTime = Time.time + messageCooldown;
         }
@@ -82,36 +68,10 @@ public class RiskZone : MonoBehaviour
         foreach (string epi in requiredEPIs)
         {
             if (!TrainingManager.Instance.HasEPI(epi))
-            {
                 missing.Add(epi);
-            }
         }
 
         return missing;
-    }
-
-    private string FormatEPIList(List<string> epis)
-    {
-        if (epis.Count == 0)
-            return "";
-
-        if (epis.Count == 1)
-            return epis[0];
-
-        if (epis.Count == 2)
-            return epis[0] + " e " + epis[1];
-
-        string result = "";
-
-        for (int i = 0; i < epis.Count; i++)
-        {
-            if (i == epis.Count - 1)
-                result += "e " + epis[i];
-            else
-                result += epis[i] + ", ";
-        }
-
-        return result;
     }
 
     private void PushPlayerOut(Transform playerTransform)
@@ -129,7 +89,30 @@ public class RiskZone : MonoBehaviour
         Vector3 targetPosition = playerTransform.position + direction * pushBackDistance;
 
         if (cc != null) cc.enabled = false;
+
         playerTransform.position = targetPosition;
+
         if (cc != null) cc.enabled = true;
+    }
+
+    private string FormatEPIList(List<string> epis)
+    {
+        if (epis.Count == 1)
+            return epis[0];
+
+        if (epis.Count == 2)
+            return epis[0] + " e " + epis[1];
+
+        string result = "";
+
+        for (int i = 0; i < epis.Count; i++)
+        {
+            if (i == epis.Count - 1)
+                result += "e " + epis[i];
+            else
+                result += epis[i] + ", ";
+        }
+
+        return result;
     }
 }

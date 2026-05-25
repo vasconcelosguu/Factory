@@ -1,17 +1,43 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BarricadeController : MonoBehaviour
 {
-    public string requiredEPI = "Capacete";
+    [Header("EPIs necessários")]
+    public List<string> requiredEPIs = new List<string>();
 
-    void Update()
+    private bool unlocked = false;
+
+    private void Update()
+    {
+        if (unlocked)
+            return;
+
+        CheckRequirements();
+    }
+
+    private void CheckRequirements()
     {
         if (TrainingManager.Instance == null)
             return;
 
-        if (TrainingManager.Instance.HasEPI(requiredEPI))
+        foreach (string epi in requiredEPIs)
         {
-            gameObject.SetActive(false);
+            if (!TrainingManager.Instance.HasEPI(epi))
+            {
+                return;
+            }
         }
+
+        UnlockBarricade();
+    }
+
+    private void UnlockBarricade()
+    {
+        unlocked = true;
+
+        Debug.Log("Barricada removida.");
+
+        gameObject.SetActive(false);
     }
 }

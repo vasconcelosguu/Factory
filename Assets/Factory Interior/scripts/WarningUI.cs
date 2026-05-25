@@ -36,10 +36,7 @@ public class WarningUI : MonoBehaviour
     public void HideWarning()
     {
         if (hideCoroutine != null)
-        {
             StopCoroutine(hideCoroutine);
-            hideCoroutine = null;
-        }
 
         if (warningPanel != null)
             warningPanel.SetActive(false);
@@ -51,7 +48,5 @@ public class WarningUI : MonoBehaviour
 
         if (warningPanel != null)
             warningPanel.SetActive(false);
-
-        hideCoroutine = null;
     }
 }
